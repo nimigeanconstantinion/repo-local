@@ -1,0 +1,18 @@
+dependencies:
+- name: mysql
+  repository: https://charts.bitnami.com/bitnami
+  version: 14.0.2
+- name: kafka-ui
+  repository: https://ui.charts.kafbat.io/
+  version: 1.6.0
+- name: kafka
+  repository: https://charts.bitnami.com/bitnami
+  version: 29.3.4
+- name: elasticsearch
+  repository: https://helm.elastic.co
+  version: 8.5.1
+- name: logstash
+  repository: https://helm.elastic.co
+  version: 8.5.1
+digest: sha256:987e3decab1dbb255c36303c53d432ac466966ba327b1df8b22e6b6229247e08
+generated: "2026-01-26T19:02:19.5207285+02:00"

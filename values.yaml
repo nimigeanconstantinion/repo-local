@@ -1,0 +1,172 @@
+namespace:
+  create: true
+  name: my-app-chart
+global:
+  imageRegistry: ""
+  ## E.g.
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  ##
+  imagePullSecrets: []
+  defaultStorageClass: ""
+  storageClass: ""
+  ## Security parameters
+  ##
+  security:
+    ## @param global.security.allowInsecureImages Allows skipping image verification
+    allowInsecureImages: true
+
+mysql:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/mysql
+    tag: "8.0.37-debian-12-r2"
+  auth:
+    rootPassword: "root"
+    database: "my_database"
+  persistence:
+    enabled: true
+    size: 5Gi
+  service:
+    type: ClusterIP
+
+
+
+kafka:
+  enabled: true
+
+  image:
+    registry: public.ecr.aws
+    repository: bitnami/kafka
+    tag: 3.9.0-debian-12-r0
+    pullPolicy: IfNotPresent
+
+  kraft:
+    enabled: true
+
+  persistence:
+    enabled: true
+    size: 8Gi
+    accessModes:
+      - ReadWriteOnce
+
+  controller:
+    replicaCount: 3
+    controllerOnly: true
+
+  broker:
+    replicaCount: 3
+
+  podSecurityContext:
+    enabled: true
+    fsGroup: 1001
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 1001
+
+  extraEnvVars:
+    - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
+      value: "true"
+    - name: KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR
+      value: "3"
+    - name: KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+      value: "3"
+    - name: KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR
+      value: "2"
+  listeners:
+    client:
+      protocol: PLAINTEXT
+    interbroker:
+      protocol: PLAINTEXT
+    controller:
+      protocol: PLAINTEXT
+
+  enabled: true
+  
+
+  # # 1. Imaginea (Folosim Bitnami pentru compatibilitate cu chart-ul)
+  # image:
+  #   registry: public.ecr.aws
+  #   repository: bitnami/kafka
+  #   tag: 3.9.0-debian-12-r0
+  #   pullPolicy: IfNotPresent
+
+
+  # # 2. Configurare KRaft (Fără Zookeeper)
+  # kraft:
+  #   enabled: true
+  #   # clusterId: "oI8pWjLzS76FvX6J-V0X1w"
+
+  # # 3. Persistența Datelor
+  # persistence:
+  #   enabled: true
+  #   size: 8Gi
+  #   accessModes:
+  #     - ReadWriteOnce
+  # controller:
+  #     replicaCount: 3
+  # broker:
+  #     replicaCount: 3
+
+  # # 4. Securitate (Necesar pentru Rancher Desktop/permisiuni scriere disk)
+  # podSecurityContext:
+  #   enabled: true
+  #   fsGroup: 1001
+  # containerSecurityContext:
+  #   enabled: true
+  #   runAsUser: 1001
+
+  # # 5. Variabile de Mediu Extra
+  # extraEnvVars:
+  #   - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
+  #     value: "true"
+  #   - name: KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR
+  #     value: "3"
+  #   - name: KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+  #     value: "3"
+  #   - name: KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR
+  #     value: "2"
+
+  # # # 6. Resurse
+  # # resources:
+  # #   limits:
+  # #     memory: 1024Mi
+  # #     cpu: 500m
+  # #   requests:
+  # #     memory: 512Mi
+  # #     cpu: 250m
+
+
+kafka-ui:
+  enabled: true
+  image:
+    registry: ghcr.io
+    repository: kafbat/kafka-ui
+    tag: 924c6c0
+    pullPolicy: IfNotPresent
+  envs:
+    config:
+      KAFKA_CLUSTERS_0_NAME: "local"
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "my-app-chart-kafka:9092"
+      # KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+      # SERVER_SERVLET_CONTEXT_PATH: "/k8s/kafka"
+      DYNAMIC_CONFIG_ENABLED: "true"
+  ports:
+    - "8080:8080"
+
+# logstash:
+#   enabled: true
+#   image: "docker.elastic.co/logstash/logstash"
+#   imageTag: "8.5.1"
+#   imagePullPolicy: "IfNotPresent"
+#   imagePullSecrets: []
+
+
+# elasticsearch:
+#   enabled: true
+#   replicas: 1
+#   image: "docker.elastic.co/elasticsearch/elasticsearch"
+#   imageTag: "8.5.1"
+#   imagePullPolicy: "IfNotPresent"
+#   imagePullSecrets: []
