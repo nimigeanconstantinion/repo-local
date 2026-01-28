@@ -37,9 +37,9 @@ kafka:
   enabled: true
 
   image:
-    registry: public.ecr.aws
-    repository: bitnami/kafka
-    tag: 3.9.0-debian-12-r0
+    registry: docker.io
+    repository: bitnamilegacy/kafka
+    tag: 3.7.0-debian-12-r7
     pullPolicy: IfNotPresent
 
   kraft:
@@ -148,7 +148,7 @@ kafka-ui:
   envs:
     config:
       KAFKA_CLUSTERS_0_NAME: "local"
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "my-app-chart-kafka:9092"
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "my-app-kafka:9092"
       # KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
       # SERVER_SERVLET_CONTEXT_PATH: "/k8s/kafka"
       DYNAMIC_CONFIG_ENABLED: "true"
@@ -163,10 +163,6 @@ kafka-ui:
 #   imagePullSecrets: []
 
 
-# elasticsearch:
-#   enabled: true
-#   replicas: 1
-#   image: "docker.elastic.co/elasticsearch/elasticsearch"
-#   imageTag: "8.5.1"
-#   imagePullPolicy: "IfNotPresent"
-#   imagePullSecrets: []
+elasticsearch:
+  enabled: true
+  replicas: 1
