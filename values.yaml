@@ -31,16 +31,75 @@ mysql:
   service:
     type: ClusterIP
 
+# kafka:
+#   enabled: true
+#   image:
+#     registry: public.ecr.aws
+#     repository: bitnami/kafka
+#     tag: 3.9.0-debian-12-r0
+  
+#   kraft:
+#     enabled: false
+  
+#   zookeeper:
+#     enabled: true
+#     image:
+#       registry: public.ecr.aws
+#       repository: bitnami/zookeeper
+#       tag: 3.9.3-debian-12-r21
+
+#   controller:
+#     enabled: false
+#     replicaCount: 0
+
+#   broker:
+#     replicaCount: 1
+#     extraEnvVars:
+#           - name: KAFKA_CFG_ADVERTISED_LISTENERS
+#             value: PLAINTEXT://my-app-chart-kafka:9092,EXTERNAL://localhost:9095
+#           - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
+#             value: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+#           - name: KAFKA_CFG_LISTENERS
+#             value: PLAINTEXT://:9092,EXTERNAL://:30092
+#     # REPARAȚIA: Mutăm nodePorts aici și ne asigurăm că avem 1 port pentru 1 replică
+#     externalAccess:
+#       enabled: true
+#       autoDiscovery:
+#         enabled: false
+#       service:
+#         type: NodePort
+#         nodePorts:
+#           - 30092
+
+#   # REPARAȚIA PENTRU VALIDATOR: 
+#   # Dezactivăm externalAccess-ul global pentru a nu mai cere IP-uri pentru controllere
+#   # externalAccess:
+#   #   enabled: false 
+
+#   rbac:
+#     create: true
+
+
+# kafka-ui:
+#   enabled: true
+#   image:
+#     registry: ghcr.io
+#     repository: kafbat/kafka-ui
+#     tag: latest # tag-ul 924c6c0 este foarte specific, 'latest' e mai sigur pentru test
+#   envs:
+#     config:
+#       KAFKA_CLUSTERS_0_NAME: "local"
+#       # Verifică dacă numele release-ului tău este my-app-v2. 
+#       # Dacă da, serviciul intern este:
+#       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "my-app-chart-kafka:30092"
+
 kafka:
   enabled: true
-  image:
-    registry: public.ecr.aws
-    repository: bitnami/kafka
-    tag: 3.9.0-debian-12-r0
-  
+  # Dezactivăm explicit KRaft pentru a folosi ZooKeeper
   kraft:
     enabled: false
   
+  # ZooKeeper mode
   zookeeper:
     enabled: true
     image:
@@ -48,51 +107,37 @@ kafka:
       repository: bitnami/zookeeper
       tag: 3.9.3-debian-12-r21
 
+  # Dezactivăm nodurile de tip Controller (sunt doar pentru KRaft)
   controller:
     enabled: false
     replicaCount: 0
 
+  # Configurăm nodurile de tip Broker
   broker:
     replicaCount: 1
     extraEnvVars:
-          - name: KAFKA_CFG_ADVERTISED_LISTENERS
-            value: PLAINTEXT://my-app-v2-kafka:9092,EXTERNAL://localhost:9095
-          - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
-            value: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
-          - name: KAFKA_CFG_LISTENERS
-            value: PLAINTEXT://:9092,EXTERNAL://:30092
-    # REPARAȚIA: Mutăm nodePorts aici și ne asigurăm că avem 1 port pentru 1 replică
+      - name: KAFKA_CFG_ADVERTISED_LISTENERS
+        # Folosește 9092 pentru comunicare internă (Kafka-UI)
+        value: PLAINTEXT://my-app-chart-kafka:9092,EXTERNAL://localhost:30092
+      - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
+        value: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - name: KAFKA_CFG_LISTENERS
+        value: PLAINTEXT://:9092,EXTERNAL://:30092
+    
     externalAccess:
       enabled: true
+      # Dezactivăm autoDiscovery dacă mapăm manual porturile
       autoDiscovery:
         enabled: false
       service:
         type: NodePort
-        nodePorts:
-          - 30092
-
-  # REPARAȚIA PENTRU VALIDATOR: 
-  # Dezactivăm externalAccess-ul global pentru a nu mai cere IP-uri pentru controllere
-  externalAccess:
-    enabled: false 
-
-  rbac:
-    create: true
-
+        nodePorts: 
+          - 30092          
 
 kafka-ui:
   enabled: true
-  image:
-    registry: ghcr.io
-    repository: kafbat/kafka-ui
-    tag: latest # tag-ul 924c6c0 este foarte specific, 'latest' e mai sigur pentru test
-  service:
-    type: NodePort
-    port: 80
-    nodePort: 30080
   envs:
     config:
       KAFKA_CLUSTERS_0_NAME: "local"
-      # Verifică dacă numele release-ului tău este my-app-v2. 
-      # Dacă da, serviciul intern este:
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "my-app-kafka:30092"
+      # Kafka-UI fiind în cluster, se conectează pe portul intern 9092
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "my-app-chart-kafka:9092"

@@ -8,11 +8,5 @@ dependencies:
 - name: kafka
   repository: https://charts.bitnami.com/bitnami
   version: 29.3.4
-- name: elasticsearch
-  repository: https://helm.elastic.co
-  version: 8.5.1
-- name: logstash
-  repository: https://helm.elastic.co
-  version: 8.5.1
-digest: sha256:987e3decab1dbb255c36303c53d432ac466966ba327b1df8b22e6b6229247e08
-generated: "2026-01-28T11:21:00.7882406+02:00"
+digest: sha256:efe02307a3a441ff9ce696bba4d08207aa2dab13364526d3444c9c7085d8c49c
+generated: "2026-01-28T17:46:52.240814+02:00"

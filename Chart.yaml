@@ -36,11 +36,3 @@ dependencies:
     version: "29.3.4" # Aceasta este o versiune recentă și stabilă pentru Bitnami
     repository: "https://charts.bitnami.com/bitnami"
     condition: kafka.enabled
-  - name: elasticsearch
-    version: "8.5.1" # Aceasta este o versiune recentă și stabilă pentru Bitnami
-    repository: "https://helm.elastic.co"
-    condition: elasticsearch.enabled
-  - name: logstash
-    version: "8.5.1" # Aceasta este o versiune recentă și stabilă pentru Bitnami
-    repository: "https://helm.elastic.co"
-    condition: logstash.enabled
