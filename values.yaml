@@ -34,12 +34,19 @@ mysql:
 
 
 kafka:
-  enabled: true
-
+  replicaCount: 1
+  # externalAccess:
+  #   enabled: true
+  #   type: nodePort
+  #   service:
+  #     type: NodePort
+  #     usePublicIP: false
+  #   autoDiscovery:
+  #     enabled: false
   image:
-    registry: docker.io
-    repository: bitnamilegacy/kafka
-    tag: 3.7.0-debian-12-r7
+    registry: public.ecr.aws
+    repository: bitnami/kafka
+    tag: 3.9.0-debian-12-r0
     pullPolicy: IfNotPresent
 
   kraft:
@@ -52,12 +59,43 @@ kafka:
       - ReadWriteOnce
 
   controller:
-    replicaCount: 3
+    replicaCount: 1
     controllerOnly: true
 
   broker:
-    replicaCount: 3
-
+    replicaCount: 1
+    # externalAccess:
+    #       enabled: true
+    #       autoDiscovery:
+    #         enabled: false
+    #       service:
+    #         type: NodePort
+    #         usePublicIP: false # Aceasta este variabila critică
+    #       nodePorts:
+    #         - 30001
+    #         - 30002
+    #         - 30003
+    # externalAccess:
+    #   enabled: true
+    #   autoDiscovery:
+    #     enabled: false
+    #   service:
+    #     type: NodePort
+    #     usePublicIP: false
+    #     domain: localhost # <--- ADAUGĂ ASTA
+    #   nodePorts:
+    #     - 30001
+  
+    externalAccess:
+      enabled: true
+      service:
+        type: NodePort
+        domain: localhost  # <--- ASTA VA REPARA UnknownHostException
+# Verifică dacă există această secțiune sau adaug-o:
+        ports:
+          external: 9094 
+      nodePorts:
+        - 30001
   podSecurityContext:
     enabled: true
     fsGroup: 1001
@@ -81,6 +119,8 @@ kafka:
       protocol: PLAINTEXT
     controller:
       protocol: PLAINTEXT
+  rbac:
+    create: true
 
   enabled: true
   
