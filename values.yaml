@@ -19,8 +19,8 @@ kafka:
   enabled: true
   fullnameOverride: testing-app-kafka
   image:
-    registry: public.ecr.aws
-    repository: bitnami/kafka
+    registry: docker.io
+    repository: bitnamilegacy/kafka
     tag: "3.9.0-debian-12-r0"
   kraft:
     enabled: true
