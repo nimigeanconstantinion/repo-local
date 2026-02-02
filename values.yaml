@@ -1,19 +1,5 @@
-namespace:
-  create: true
-  name: my-app-chart
 global:
-  imageRegistry: ""
-  ## E.g.
-  ## imagePullSecrets:
-  ##   - myRegistryKeySecretName
-  ##
-  imagePullSecrets: []
-  defaultStorageClass: ""
-  storageClass: ""
-  ## Security parameters
-  ##
   security:
-    ## @param global.security.allowInsecureImages Allows skipping image verification
     allowInsecureImages: true
 
 mysql:
@@ -28,81 +14,39 @@ mysql:
   persistence:
     enabled: true
     size: 5Gi
-  service:
-    type: ClusterIP
-
-
 
 kafka:
-  replicaCount: 1
-  # externalAccess:
-  #   enabled: true
-  #   type: nodePort
-  #   service:
-  #     type: NodePort
-  #     usePublicIP: false
-  #   autoDiscovery:
-  #     enabled: false
+  enabled: true
+  fullnameOverride: testing-app-kafka
   image:
     registry: public.ecr.aws
     repository: bitnami/kafka
-    tag: 3.9.0-debian-12-r0
-    pullPolicy: IfNotPresent
-
+    tag: "3.9.0-debian-12-r0"
   kraft:
     enabled: true
-
+  controller:
+    replicaCount: 3
+    controllerOnly: true
+  broker:
+    replicaCount: 3
   persistence:
     enabled: true
     size: 8Gi
-    accessModes:
-      - ReadWriteOnce
-
-  controller:
-    replicaCount: 1
-    controllerOnly: true
-
-  broker:
-    replicaCount: 1
-    # externalAccess:
-    #       enabled: true
-    #       autoDiscovery:
-    #         enabled: false
-    #       service:
-    #         type: NodePort
-    #         usePublicIP: false # Aceasta este variabila critică
-    #       nodePorts:
-    #         - 30001
-    #         - 30002
-    #         - 30003
-    # externalAccess:
-    #   enabled: true
-    #   autoDiscovery:
-    #     enabled: false
-    #   service:
-    #     type: NodePort
-    #     usePublicIP: false
-    #     domain: localhost # <--- ADAUGĂ ASTA
-    #   nodePorts:
-    #     - 30001
-  
-    externalAccess:
-      enabled: true
-      service:
-        type: NodePort
-        domain: localhost  # <--- ASTA VA REPARA UnknownHostException
-# Verifică dacă există această secțiune sau adaug-o:
-        ports:
-          external: 9094 
-      nodePorts:
-        - 30001
   podSecurityContext:
     enabled: true
     fsGroup: 1001
   containerSecurityContext:
     enabled: true
     runAsUser: 1001
-
+  listeners:
+    client:
+      protocol: PLAINTEXT
+    interbroker:
+      protocol: PLAINTEXT
+    controller:
+      protocol: PLAINTEXT
+    external:
+      protocol: PLAINTEXT
   extraEnvVars:
     - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
       value: "true"
@@ -112,97 +56,36 @@ kafka:
       value: "3"
     - name: KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR
       value: "2"
-  listeners:
-    client:
-      protocol: PLAINTEXT
-    interbroker:
-      protocol: PLAINTEXT
-    controller:
-      protocol: PLAINTEXT
-  rbac:
-    create: true
-
-  enabled: true
-  
-
-  # # 1. Imaginea (Folosim Bitnami pentru compatibilitate cu chart-ul)
-  # image:
-  #   registry: public.ecr.aws
-  #   repository: bitnami/kafka
-  #   tag: 3.9.0-debian-12-r0
-  #   pullPolicy: IfNotPresent
-
-
-  # # 2. Configurare KRaft (Fără Zookeeper)
-  # kraft:
-  #   enabled: true
-  #   # clusterId: "oI8pWjLzS76FvX6J-V0X1w"
-
-  # # 3. Persistența Datelor
-  # persistence:
-  #   enabled: true
-  #   size: 8Gi
-  #   accessModes:
-  #     - ReadWriteOnce
-  # controller:
-  #     replicaCount: 3
-  # broker:
-  #     replicaCount: 3
-
-  # # 4. Securitate (Necesar pentru Rancher Desktop/permisiuni scriere disk)
-  # podSecurityContext:
-  #   enabled: true
-  #   fsGroup: 1001
-  # containerSecurityContext:
-  #   enabled: true
-  #   runAsUser: 1001
-
-  # # 5. Variabile de Mediu Extra
-  # extraEnvVars:
-  #   - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
-  #     value: "true"
-  #   - name: KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR
-  #     value: "3"
-  #   - name: KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
-  #     value: "3"
-  #   - name: KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR
-  #     value: "2"
-
-  # # # 6. Resurse
-  # # resources:
-  # #   limits:
-  # #     memory: 1024Mi
-  # #     cpu: 500m
-  # #   requests:
-  # #     memory: 512Mi
-  # #     cpu: 250m
-
+    - name: KAFKA_CFG_DEFAULT_REPLICATION_FACTOR
+      value: "3"
+    - name: KAFKA_CFG_MIN_INSYNC_REPLICAS
+      value: "2"
+  externalAccess:
+    enabled: true
+    autoDiscovery:
+      enabled: false
+    broker:
+      service:
+        type: NodePort
+        domain: localhost
+        ports:
+          external: 9094
+        nodePorts:
+          - 30001
+          - 30002
+          - 30003
 
 kafka-ui:
   enabled: true
-  image:
-    registry: ghcr.io
-    repository: kafbat/kafka-ui
-    tag: 924c6c0
-    pullPolicy: IfNotPresent
   envs:
     config:
       KAFKA_CLUSTERS_0_NAME: "local"
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "my-app-kafka:9092"
-      # KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
-      # SERVER_SERVLET_CONTEXT_PATH: "/k8s/kafka"
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "testing-app-kafka:9092"
       DYNAMIC_CONFIG_ENABLED: "true"
-  ports:
-    - "8080:8080"
-
-# logstash:
-#   enabled: true
-#   image: "docker.elastic.co/logstash/logstash"
-#   imageTag: "8.5.1"
-#   imagePullPolicy: "IfNotPresent"
-#   imagePullSecrets: []
-
-
-elasticsearch:
-  enabled: true
-  replicas: 1
+      SERVER_SERVLET_CONTEXT_PATH: "/kafka"
+  ingress:
+    enabled: true
+    ingressClassName: "nginx"
+    host: "localhost"
+    path: "/kafka"
+    pathType: "Prefix"

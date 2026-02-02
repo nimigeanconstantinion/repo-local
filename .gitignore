@@ -1,0 +1,6 @@
+.idea/
+*.iml
+
+services/**/target/
+
+values.local.yaml
