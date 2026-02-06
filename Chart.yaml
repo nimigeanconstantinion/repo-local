@@ -17,3 +17,15 @@ dependencies:
     version: "29.3.4"
     repository: "https://charts.bitnami.com/bitnami"
     condition: kafka.enabled
+  - name: logstash
+    version: "7.0.11"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: logstash.enabled
+  - name: elasticsearch
+    version: "8.5.1"
+    repository: "https://helm.elastic.co"
+    condition: elasticsearch.enabled    
+  - name: kibana
+    version: "8.5.1"
+    repository: "https://helm.elastic.co"
+    condition: kibana.enabled    

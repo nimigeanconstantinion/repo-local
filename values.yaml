@@ -89,3 +89,158 @@ kafka-ui:
     host: "localhost"
     path: "/kafka"
     pathType: "Prefix"
+
+logstash:
+  replicaCount: 1
+  image:
+    registry: public.ecr.aws
+    repository: bitnami/logstash
+    tag: 9.1.2-debian-12-r0
+    pullPolicy: IfNotPresent
+
+  extraEnvVars:
+    - name: ELASTIC_PASSWORD
+      value: "passwOrd"
+    - name: LS_JAVA_OPTS
+      value: "-Xmx512m -Xms512m" # Ajustează în funcție de RAM-ul disponibil
+
+  input: |-
+    tcp {
+      port => 3100
+      codec => json_lines
+    }
+
+  output: |-
+    elasticsearch {
+      hosts => ["http://elasticsearch:9200"]
+      user => "elastic"
+      password => "${ELASTIC_PASSWORD}"
+      ssl_verification_mode => "none" # Adăugat pentru siguranță dacă ssl e false
+    }
+
+  # Verifică să ai și această secțiune pentru ca portul să fie accesibil
+  service:
+      type: ClusterIP
+      ports:
+        - name: http
+          port: 3100
+          targetPort: 3100
+          protocol: TCP
+
+elasticsearch:
+  replicaCount: 1
+  image: "docker.elastic.co/elasticsearch/elasticsearch"
+  imageTag: "8.5.1"
+  imagePullPolicy: "IfNotPresent"
+
+  # 1. Dezactivăm securitatea SSL pentru simplitate (dacă nu ai certificate)
+  # și forțăm modul single-node
+  esConfig:
+    elasticsearch.yml: |
+      xpack.security.enabled: true
+      xpack.security.http.ssl.enabled: false
+      discovery.type: single-node
+      cluster.name: elasticsearch
+
+  # 2. Mapăm parola din Secret-ul tău existent în variabila pe care ES o recunoaște la bootstrap
+  extraEnvs:
+    - name: ELASTIC_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          # Folosim ghilimele și scriem sintaxa ca string. 
+          # Chart-ul o va evalua la runtime.
+          name: elk-secrets
+          key: elastic_password
+    - name: ES_JAVA_OPTS
+      value: "-Xms1g -Xmx1g"
+
+  # 3. Persistența - asigură-te că numele PVC-ului corespunde
+  persistence:
+    enabled: true
+    # Dacă vrei să refolosești PVC-ul creat deja de tine:
+    # existingClaim: "{{ include "microserv-proj.fullname" . }}-es-pvc"
+    # NU pune nimic la existingClaim
+    size: 10Gi
+    storageClass: "standard" # sau ce storage class ai în cluster (ex: gp2, longhorn, etc.)
+    accessModes:
+      - ReadWriteOnce
+
+  # 4. Resurse minime pentru a nu intra în CrashLoopBackOff pe noduri mici
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "2Gi"
+    limits:
+      cpu: "1000m"
+      memory: "2Gi"
+
+kibana:
+  image: "docker.elastic.co/kibana/kibana"
+  imageTag: "8.5.1"
+
+  hooks:
+      enabled: false
+  elasticsearchHosts: "http://elasticsearch:9200"
+
+  elasticsearchCertificateAuthoritiesFile: ""
+  # elasticsearchCredentialSecret: ""
+  elasticsearchCredentialSecret: ""
+  
+  elasticsearchCertificateSecret: ""
+
+
+  # Replicarea variabilelor tale de mediu
+  extraEnvs:
+    - name: "SERVER_BASEPATH"
+      value: "/kibana"
+    - name: "SERVER_REWRITEBASEPATH"
+      value: "true"
+    - name: "SERVER_SAMESITECOOKIES"
+      value: "None"
+    - name: "TELEMETRY_ENABLED"
+      value: "false"
+    - name: "ELASTICSEARCH_USERNAME"
+      value: "kibana_system"
+    - name: "ELASTICSEARCH_PASSWORD"
+      valueFrom:
+        secretKeyRef:
+          name: elk-secrets
+          key: kibana_password      
+
+  # Configurarea kibana.yml pentru a se asigura că rutele funcționează corect
+  kibanaConfig:
+    kibana.yml: |
+          server.basePath: "/kibana"
+          server.rewriteBasePath: true
+          elasticsearch.ssl.verificationMode: none
+          elasticsearch.hosts: ["http://elasticsearch:9200"]
+
+  protocol: http
+
+  # 5. Această linie este critică pentru a evita eroarea "elasticsearch-certs Not found"
+  # Trimitem o listă goală de volume pentru a suprascrie montările default
+  secretMounts: []
+
+  # Sincronizarea probei de sănătate cu noul path
+  # Dacă ai SERVER_BASEPATH, Kubernetes trebuie să verifice sănătatea la noul URL
+  # healthCheckPath: "/kibana/app/kibana"
+
+  service:
+    type: ClusterIP
+    port: 5601
+    # Adăugăm sessionAffinity conform cerinței tale din YAML-ul original
+    annotations: {}
+    # Helm chart-ul oficial nu are un câmp direct pentru sessionAffinity, 
+    # dar majoritatea serviciilor ClusterIP îl ignoră dacă nu e setat explicit.
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      # Dacă folosești path-ul /kibana, uneori e nevoie de rewrite (depinde de setup)
+      # nginx.ingress.kubernetes.io/rewrite-target: /
+    hosts:
+      - host: kibana.local
+        paths:
+          - path: /        # Sau /kibana, dacă vrei să accesezi via kibana.local/kibana
+            pathType: ImplementationSpecific  
