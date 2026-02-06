@@ -4,6 +4,11 @@ server:
 app:
   kafka:
     topic: testing-app-topic
+  elk:
+    elasticsearch-uri: http://elasticsearch:9200
+    kibana-base-url: http://kibana:5601
+    logstash-host: logstash
+    logstash-port: 5044
 
 spring:
   datasource:
@@ -34,8 +39,8 @@ springdoc:
     path: /swagger-ui.html
   api-docs:
     path: /v3/api-docs
-
 logging:
+  config: classpath:logback-spring.xml
   level:
     org.springframework.kafka: INFO
     org.apache.kafka.clients.consumer: INFO

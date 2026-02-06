@@ -4,6 +4,14 @@ server:
 app:
   kafka:
     topic: testing-app-topic
+  elk:
+    elasticsearch-uri: http://elasticsearch:9200
+    kibana-base-url: http://kibana:5601
+    logstash-host: logstash
+    logstash-port: 5044
+
+logging:
+  config: classpath:logback-spring.xml
 
 spring:
   Kafka:
