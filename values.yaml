@@ -92,10 +92,37 @@ kafka-ui:
 
 elasticsearch:
   enabled: true
+  # architecture: standalone
+  # replicaCount: 1  
+  master:
+    replicaCount: 1
+  data:
+    replicaCount: 1
+  # Forțează crearea serviciului principal chiar și fără coordinating nodes
+  coordinating:
+    replicaCount: 0
+    service:
+      type: ClusterIP
   image:
     registry: docker.io
     repository: bitnamilegacy/elasticsearch
-    tag: "9.1.2-debian-12-r1"
+    tag: 9.1.2-debian-12-r0
+    digest: ""
+    pullPolicy: IfNotPresent
+## Adaugă această secțiune pentru a suprascrie imaginea care dă eroare
+  sysctlImage:
+    registry: docker.io
+    repository: bitnamilegacy/os-shell
+    tag: 12-debian-12-r50 # Sau o versiune existentă în legacy
+    pullPolicy: IfNotPresent
+
+  # Dacă eroarea persistă la permisiunile volumelor:
+  volumePermissions:
+    enabled: true
+    image:
+      registry: docker.io
+      repository: bitnamilegacy/os-shell
+      tag: 12-debian-12-r50    
   security:
     enabled: false
     tls:
@@ -110,37 +137,90 @@ kibana:
   image:
     registry: docker.io
     repository: bitnamilegacy/kibana
-    tag: "9.1.2-debian-12-r1"
+    tag: 9.1.2-debian-12-r0
   elasticsearch:
     hosts:
-      - "elasticsearch"
+      - "my-app-elasticsearch"
     port: 9200
     security:
       auth:
-        enabled: false
+        enabled: true
+        kibanaUsername: "elastic"
+        kibanaPassword: "paassw0rd"   
       tls:
         enabled: false
+  security:
+    auth:
+      enabled: true      
+  extraEnvVars:
+    - name: NODE_OPTIONS
+      value: "--max-old-space-size=2048" # Alocă 2GB pentru procesul Node.js
+    - name: KIBANA_SERVER_BASEPATH
+      value: "/kibana"
+    - name: SERVER_BASEPATH # Adăugat ca backup pentru compatibilitate
+      value: "/kibana"
+    - name: KIBANA_SERVER_REWRITEBASEPATH
+      value: "true"
+    # Adaugă și variabila SAMESITE pe care o aveai în cel vechi
+    - name: KIBANA_SERVER_SAMESITECOOKIES
+      value: "None"
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 180 # Oferă-i 2 minute să pornească
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6      
+  resources:
+    limits:
+      cpu: 1000m      # Mărește și CPU-ul puțin pentru a accelera pornirea
+      memory: 3Gi     # Trebuie să fie MAI MARE decât max-old-space-size
+    requests:
+      cpu: 500m
+      memory: 2Gi     # Rezervă direct 2GB pentru stabilitate
+
   ingress:
     enabled: true
     ingressClassName: "nginx"
-    host: "localhost"
-    path: "/kibana"
-    pathType: "Prefix"
+    host: "kibana.local"
+    path: "/"
+    pathType: "ImplementationSpecific" # Schimbă de la Prefix pentru a fi mai flexibil
+    annotations:
+      # Aceasta forțează Nginx să paseze prefixul corect către aplicație
+      nginx.ingress.kubernetes.io/x-forwarded-prefix: "/kibana"
 
 logstash:
   enabled: true
   image:
     registry: docker.io
     repository: bitnamilegacy/logstash
-    tag: "9.1.2-debian-12-r1"
+    tag: 9.1.2-debian-12-r0
   extraEnvVars:
     - name: ELASTICSEARCH_HOST
-      value: "elasticsearch"
+      value: "my-app-elasticsearch"
     - name: ELASTICSEARCH_PORT
       value: "9200"
   output: |-
     elasticsearch {
       hosts => ["${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"]
-      manage_template => false
       index => "logstash-%{+YYYY.MM.dd}"
+      ilm_enabled => false
+      ssl_verification_mode => "none"
+      # ADAUGĂ ASTA PENTRU A IGNORA EROAREA DE VERSIUNE/LICENȚĂ
+      healthcheck_path => "/" 
     }
+  input: |-
+    tcp {
+      port => 3100
+      codec => json_lines  # Folosește json_lines în loc de json pentru Logback
+    }
+  containerPorts: 
+    - name: logstash-tcp
+      containerPort: 3100
+      protocol: TCP
+
+  service:
+    ports:
+      - name: logstash-tcp
+        port: 3100
+        targetPort: 3100
+        protocol: TCP
