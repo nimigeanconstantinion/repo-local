@@ -150,14 +150,14 @@ kibana:
     tag: 9.1.2-debian-12-r0
   elasticsearch:
     hosts:
-      - "resurse-testing-app-elasticsearch"
+      - "my-app-elasticsearch"
     port: 9200
     security:
       auth:
         enabled: true
         kibanaPassword: "paassw0rd"
         createSystemUser: true
-        elasticsearchPasswordSecret: "resurse-testing-app-elasticsearch"
+        elasticsearchPasswordSecret: "my-app-elasticsearch"
       tls:
         enabled: true
         verificationMode: "none"
@@ -208,13 +208,20 @@ logstash:
     tag: 9.1.2-debian-12-r0
   extraEnvVars:
     - name: ELASTICSEARCH_HOST
-      value: "resurse-testing-app-elasticsearch"
+      value: "my-app-elasticsearch"
     - name: ELASTICSEARCH_PORT
       value: "9200"
+    - name: ES_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: my-app-elasticsearch
+          key: elasticsearch-password # cheia găsită la pasul 1
   output: |-
     elasticsearch {
       hosts => ["${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"]
       index => "logstash-%{+YYYY.MM.dd}"
+      user => "elastic"
+      password => "${ES_PASSWORD}"
       ilm_enabled => false
       ssl_verification_mode => "none"
       # ADAUGĂ ASTA PENTRU A IGNORA EROAREA DE VERSIUNE/LICENȚĂ
