@@ -103,6 +103,8 @@ elasticsearch:
     replicaCount: 0
     service:
       type: ClusterIP
+  ingest:
+    replicaCount: 0
   image:
     registry: docker.io
     repository: bitnamilegacy/elasticsearch
@@ -132,6 +134,13 @@ elasticsearch:
   persistence:
     enabled: true
     size: 10Gi
+  resources:
+    requests:
+      cpu: 200m
+      memory: 1Gi
+    limits:
+      cpu: 500m
+      memory: 2Gi
 
 kibana:
   enabled: true
@@ -141,14 +150,17 @@ kibana:
     tag: 9.1.2-debian-12-r0
   elasticsearch:
     hosts:
-      - "my-app-elasticsearch"
+      - "resurse-testing-app-elasticsearch"
     port: 9200
     security:
       auth:
         enabled: true
         kibanaPassword: "paassw0rd"
+        createSystemUser: true
+        elasticsearchPasswordSecret: "resurse-testing-app-elasticsearch"
       tls:
         enabled: true
+        verificationMode: "none"
   extraEnvVars:
     - name: NODE_OPTIONS
       value: "--max-old-space-size=2048" # Alocă 2GB pentru procesul Node.js
@@ -166,14 +178,17 @@ kibana:
     initialDelaySeconds: 180 # Oferă-i 2 minute să pornească
     periodSeconds: 10
     timeoutSeconds: 5
-    failureThreshold: 6      
+    failureThreshold: 6
+    httpGet:
+      path: "/kibana/status"
+      port: http
   resources:
     limits:
-      cpu: 1000m      # Mărește și CPU-ul puțin pentru a accelera pornirea
-      memory: 3Gi     # Trebuie să fie MAI MARE decât max-old-space-size
-    requests:
       cpu: 500m
-      memory: 2Gi     # Rezervă direct 2GB pentru stabilitate
+      memory: 2Gi
+    requests:
+      cpu: 200m
+      memory: 1Gi
 
   ingress:
     enabled: true
@@ -193,7 +208,7 @@ logstash:
     tag: 9.1.2-debian-12-r0
   extraEnvVars:
     - name: ELASTICSEARCH_HOST
-      value: "my-app-elasticsearch"
+      value: "resurse-testing-app-elasticsearch"
     - name: ELASTICSEARCH_PORT
       value: "9200"
   output: |-
