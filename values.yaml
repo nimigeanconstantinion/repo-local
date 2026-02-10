@@ -13,7 +13,19 @@ mysql:
     database: "my_database"
   persistence:
     enabled: true
-    size: 5Gi
+    size: 8Gi
+  # --- ADAUGA DE AICI ---
+  primary:
+    extraVolumes:
+      - name: mysql-init-scripts
+        configMap:
+          name: app-config # Numele actualizat din metadata ta
+          items:
+            - key: keycloak-db.sql
+              path: init-db.sql # MySQL va executa acest fișier la pornire
+    extraVolumeMounts:
+      - name: mysql-init-scripts
+        mountPath: /docker-entrypoint-initdb.d
 
 kafka:
   enabled: true
@@ -111,7 +123,7 @@ elasticsearch:
     tag: 9.1.2-debian-12-r0
     digest: ""
     pullPolicy: IfNotPresent
-## Adaugă această secțiune pentru a suprascrie imaginea care dă eroare
+ ## Adaugă această secțiune pentru a suprascrie imaginea care dă eroare
   sysctlImage:
     registry: docker.io
     repository: bitnamilegacy/os-shell
@@ -243,3 +255,63 @@ logstash:
         port: 3100
         targetPort: 3100
         protocol: TCP
+
+# testing-app-deps:
+keycloak:
+  enabled: true
+  dbHost: "postgresql" 
+  image: 
+    registry: public.ecr.aws
+    repository: bitnami/keycloak
+    tag: 26.1.3
+    pullPolicy: IfNotPresent
+    debug: false
+  auth:
+    adminUser: "admin"
+    adminPassword: "admin"
+  production: false
+  proxy: none
+  auth:
+    adminUser: "admin"
+    adminPassword: "StrongPassword123!" # Evită "admin" ca parolă, unele imagini o resping
+  production: false
+  proxy: none
+  
+  extraEnvVars:
+    - name: KEYCLOAK_ADMIN
+      value: "admin"
+    - name: KEYCLOAK_ADMIN_PASSWORD
+      value: "StrongPassword123!"
+    - name: KC_BOOTSTRAP_ADMIN_USERNAME
+      value: "admin"
+    - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+      value: "StrongPassword123!"
+    - name: KC_DB_USERNAME
+      value: "keycloak"
+    - name: KC_DB_PASSWORD
+      value: "password123"
+    - name: KC_DB_URL
+      value: "jdbc:postgresql://postgresql:5432/keycloak"
+
+
+  # Corecție probe: Keycloak 26 folosește /health/live sau /health/ready
+  readinessProbe:
+    enabled: false
+  livenessProbe:
+    enabled: false
+  postgresql:
+    fullnameOverride: "postgresql"
+    enabled: true
+    image:
+      registry: public.ecr.aws
+      repository: bitnami/postgresql
+      tag: 17.6.0
+      debug: false
+      pullPolicy: Always
+    auth:
+      database: "keycloak"
+      username: "keycloak"
+      password: "password123"
+      postgresPassword: "password123"
+
+  

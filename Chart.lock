@@ -17,5 +17,8 @@ dependencies:
 - name: logstash
   repository: https://charts.bitnami.com/bitnami
   version: 7.0.11
-digest: sha256:a7122be4927b678b001ede554c563f9b4572647243223f04cad95941d3092a4a
-generated: "2026-02-03T20:44:36.304121+02:00"
+- name: keycloak
+  repository: https://charts.bitnami.com/bitnami
+  version: 25.2.0
+digest: sha256:9a498006962299c192b513bd0e9264afc0e7262c731d9f726d1c4c8f4807bc24
+generated: "2026-02-10T14:31:22.5166576+02:00"
