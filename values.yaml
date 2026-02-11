@@ -256,6 +256,126 @@ logstash:
         targetPort: 3100
         protocol: TCP
 
+zipkin:
+  enabled: true
+  image: 
+    registry: public.ecr.aws
+    repository: bitnami/zipkin
+    tag: 3.5.1-debian-12-r5
+    pullPolicy: IfNotPresent
+    debug: false
+
+  resources:
+      limits:
+        cpu: 500m
+        memory: 1024Mi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+
+    ## Tipul de stocare (Default: memorie, nu persistă la restart)
+    ## Opțiuni: mem, mysql, cassandra, elasticsearch
+  storageType: mem
+
+  ## Configurarea Serviciului (pentru acces din exterior)
+  service:
+    type: ClusterIP
+    ports:
+      http: 9411
+
+  ## Activarea Ingress-ului (pentru acces prin domeniu)
+  # ingress:
+  #   enabled: true
+  #   hostname: zipkin.local
+  #   annotations:
+  #     kubernetes.io/ingress.class: nginx
+
+# alertmanager:
+#   enabled: false
+#   # image:
+#   #   registry: docker.io
+#   #   repository: bitnamilegacy/alertmanager
+#   #   tag: 0.28.1-debian-12-r15
+
+# # Blocul pentru Cassandra (tot la același nivel, dacă vrei să o dezactivezi)
+# cassandra:
+#   enabled: false
+
+prometheus:
+  enabled: true
+  image:
+    registry: public.ecr.aws
+    repository: bitnamilegacy/prometheus
+    tag: 3.5.0-debian-12-r3
+    pullPolicy: Always
+  debug: false
+  # auth:
+  #   adminUser: "admin"
+  #   adminPassword: "admin"
+  production: false
+  # proxy: none
+  
+  server:
+    replicaCount: 1
+    configMapName: app-config
+    configMapKey: prometheus.yml
+    extraArgs:
+      - "--config.file=/opt/bitnami/prometheus/conf/prometheus.yml"
+  persistence:
+    enabled: true
+    existingClaim: prometheus-pvc
+  extraVolumes:
+    - name: prometheus-config-volume
+      configMap:
+        name: app-config
+  extraVolumeMounts:
+    - name: prometheus-config-volume
+      mountPath: /opt/bitnami/prometheus/conf/prometheus.yml
+      subPath: prometheus.yml
+  service:
+    type: ClusterIP
+    ports:
+      http: 9090
+
+grafana:
+  enabled: true
+  # Imaginea (folosim Public ECR pentru stabilitate)
+  image:
+    registry: public.ecr.aws
+    repository: bitnami/grafana
+    tag: 12.1.1-debian-12-r1
+
+  # Autentificare
+  admin:
+    user: admin
+    password: "parola_ta_secreta"
+
+  # Conectare automată la Prometheus-ul tău
+  datasources:
+    secretName: "" # Putem defini sursele direct în YAML
+    config:
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: http://my-app-prometheus-server:9090 # Numele serviciului de Prometheus creat anterior
+          access: proxy
+          isDefault: true
+
+  # Persistență pentru dashboard-uri și setări
+  persistence:
+    enabled: true
+    size: 5Gi
+    # existingClaim: "grafana-pvc" # Dacă ai deja un PVC creat
+
+  # Ingress pentru a accesa Grafana din browser
+  ingress:
+    enabled: true
+    hostname: grafana.local
+    path: /
+    annotations:
+      kubernetes.io/ingress.class: nginx
+
+
 # testing-app-deps:
 keycloak:
   enabled: true

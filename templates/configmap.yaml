@@ -9,6 +9,18 @@ data:
       "VITE_KEYCLOAK_URL":"http://keycloak:8080",
       "VITE_KEYCLOAK_SECRET": "Xbn5JQ71nFt8wD5Gk5HVD2Qcmng899k4"
     }
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+    scrape_configs:
+      - job_name: 'spring-boot'
+        scrape_interval: 5s
+        metrics_path: '/actuator/prometheus'
+        static_configs:
+          - targets:
+              - 'kube-land.default.svc.cluster.local:8082'
+              - 'kube-ms1.default.svc.cluster.local:8081'  
+
   keycloak-db.sql: |
     CREATE DATABASE IF NOT EXISTS keycloak;
     CREATE USER IF NOT EXISTS 'keycloak'@'%' IDENTIFIED BY 'keycloakpass';
