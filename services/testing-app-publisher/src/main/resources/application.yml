@@ -5,10 +5,10 @@ app:
   kafka:
     topic: testing-app-topic
   elk:
-    elasticsearch-uri: http://elasticsearch:9200
-    kibana-base-url: http://kibana:5601
-    logstash-host: logstash
-    logstash-port: 5044
+    elasticsearch-uri: https://resurse-app-elasticsearch:9200
+    kibana-base-url: http://resurse-app-kibana:5601/kibana
+    logstash-host: 127.0.0.1
+    logstash-port: 30544
 
 logging:
   config: classpath:logback-spring.xml

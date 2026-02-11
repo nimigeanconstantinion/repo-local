@@ -4,6 +4,10 @@ global:
 
 mysql:
   enabled: true
+  service:
+    type: NodePort
+    nodePorts:
+      mysql: 30006
   image:
     registry: docker.io
     repository: bitnamilegacy/mysql
@@ -162,29 +166,28 @@ kibana:
     tag: 9.1.2-debian-12-r0
   elasticsearch:
     hosts:
-      - "my-app-elasticsearch"
+      - "resurse-app-elasticsearch"
     port: 9200
     security:
       auth:
         enabled: true
         kibanaPassword: "paassw0rd"
         createSystemUser: true
-        elasticsearchPasswordSecret: "my-app-elasticsearch"
+        elasticsearchPasswordSecret: "resurse-app-elasticsearch"
       tls:
         enabled: true
         verificationMode: "none"
   extraEnvVars:
     - name: NODE_OPTIONS
       value: "--max-old-space-size=2048" # Alocă 2GB pentru procesul Node.js
-    - name: KIBANA_SERVER_BASEPATH
-      value: "/kibana"
-    - name: SERVER_BASEPATH # Adăugat ca backup pentru compatibilitate
-      value: "/kibana"
-    - name: KIBANA_SERVER_REWRITEBASEPATH
-      value: "true"
     # Adaugă și variabila SAMESITE pe care o aveai în cel vechi
     - name: KIBANA_SERVER_SAMESITECOOKIES
       value: "None"
+  configuration:
+    server:
+      basePath: "/kibana"
+      publicBaseUrl: "http://localhost/kibana"
+      rewriteBasePath: true
   readinessProbe:
     enabled: true
     initialDelaySeconds: 180 # Oferă-i 2 minute să pornească
@@ -205,9 +208,9 @@ kibana:
   ingress:
     enabled: true
     ingressClassName: "nginx"
-    host: "kibana.local"
-    path: "/"
-    pathType: "ImplementationSpecific" # Schimbă de la Prefix pentru a fi mai flexibil
+    hostname: "localhost"
+    path: "/kibana"
+    pathType: "Prefix"
     annotations:
       # Aceasta forțează Nginx să paseze prefixul corect către aplicație
       nginx.ingress.kubernetes.io/x-forwarded-prefix: "/kibana"
@@ -220,42 +223,44 @@ logstash:
     tag: 9.1.2-debian-12-r0
   extraEnvVars:
     - name: ELASTICSEARCH_HOST
-      value: "my-app-elasticsearch"
+      value: "resurse-app-elasticsearch"
     - name: ELASTICSEARCH_PORT
       value: "9200"
     - name: ES_PASSWORD
       valueFrom:
         secretKeyRef:
-          name: my-app-elasticsearch
+          name: resurse-app-elasticsearch
           key: elasticsearch-password # cheia găsită la pasul 1
   output: |-
     elasticsearch {
-      hosts => ["${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"]
+      hosts => ["https://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"]
       index => "logstash-%{+YYYY.MM.dd}"
       user => "elastic"
       password => "${ES_PASSWORD}"
       ilm_enabled => false
+      ssl_enabled => true
       ssl_verification_mode => "none"
       # ADAUGĂ ASTA PENTRU A IGNORA EROAREA DE VERSIUNE/LICENȚĂ
       healthcheck_path => "/" 
     }
   input: |-
     tcp {
-      port => 3100
+      port => 5044
       codec => json_lines  # Folosește json_lines în loc de json pentru Logback
     }
   containerPorts: 
     - name: logstash-tcp
-      containerPort: 3100
+      containerPort: 5044
       protocol: TCP
 
   service:
+    type: NodePort
     ports:
       - name: logstash-tcp
-        port: 3100
-        targetPort: 3100
+        port: 5044
+        targetPort: 5044
         protocol: TCP
-
+        nodePort: 30544
 # testing-app-deps:
 keycloak:
   enabled: true

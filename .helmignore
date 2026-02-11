@@ -21,3 +21,11 @@
 .idea/
 *.tmproj
 .vscode/
+# Local service sources/build artifacts
+services/
+*/target/
+*/*/target/
+*/*/*/target/
+*.jar
+services/testing-app-consumer/target/*.jar
+services/testing-app-publisher/target/*.jar
