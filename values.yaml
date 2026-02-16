@@ -277,6 +277,12 @@ keycloak:
     - name: KEYCLOAK_EXTRA_ARGS
       value: "--import-realm"
 
+  realmImport:
+    enabled: true
+    configMapName: "app-config"
+    file: "files/keycloak/realm-export.json"
+    key: "realm-export.json"
+
 
   # Corecție probe: Keycloak 26 folosește /health/live sau /health/ready
   readinessProbe:

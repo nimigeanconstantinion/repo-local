@@ -1,0 +1,14 @@
+{{- if and .Values.keycloak.enabled .Values.keycloak.realmImport.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.keycloak.realmImport.configMapName }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" }}
+data:
+  {{ .Values.keycloak.realmImport.key }}: |
+{{ .Files.Get .Values.keycloak.realmImport.file | nindent 4 }}
+{{- end }}
