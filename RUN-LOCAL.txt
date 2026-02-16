@@ -10,7 +10,7 @@ helm dependency update
 helm lint .
 
 4) Vezi manifestele generate:
-helm template testing-app-deps . -f values.yaml -f values.local.yaml
+helm template resurse-testing-app . -f values.yaml -f values-bgd.yaml
 
 5) Deploy local:
-helm upgrade --install testing-app-deps . -n <namespace> -f values.yaml -f values.local.yaml
+helm upgrade --install resurse-testing-app . -n <namespace> -f values.yaml -f values-bgd.yaml

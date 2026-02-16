@@ -2,6 +2,9 @@ dependencies:
 - name: mysql
   repository: https://charts.bitnami.com/bitnami
   version: 14.0.2
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 16.7.26
 - name: kafka-ui
   repository: https://ui.charts.kafbat.io/
   version: 1.6.0
@@ -20,5 +23,5 @@ dependencies:
 - name: keycloak
   repository: https://charts.bitnami.com/bitnami
   version: 25.2.0
-digest: sha256:9a498006962299c192b513bd0e9264afc0e7262c731d9f726d1c4c8f4807bc24
-generated: "2026-02-10T14:31:22.5166576+02:00"
+digest: sha256:f98c8a7fb8f0d0c66c99b179cccf6d89d45d4024469ee204138568ec065fab2e
+generated: "2026-02-16T20:17:25.257041+02:00"

@@ -6,22 +6,35 @@ mysql:
   enabled: true
   fullnameOverride: "mysql"
   service:
-    type: NodePort
-    nodePorts:
-      mysql: 30006
+    type: ClusterIP
   image:
     registry: docker.io
     repository: bitnamilegacy/mysql
     tag: "8.0.37-debian-12-r2"
   auth:
     rootPassword: "root"
-    createDatabase: true
-    database: "keycloak"
-    username: "keycloak"
-    password: "password123"
+    database: "my_database"
   persistence:
     enabled: true
     size: 8Gi
+
+postgresql:
+  enabled: true
+  fullnameOverride: "postgresql"
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/postgresql
+    tag: "17.6.0-debian-12-r0"
+  auth:
+    username: "keycloak"
+    password: "password123"
+    database: "keycloak"
+    postgresPassword: "password123"
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+
 kafka:
   enabled: true
   fullnameOverride: testing-app-kafka
@@ -68,19 +81,7 @@ kafka:
     - name: KAFKA_CFG_MIN_INSYNC_REPLICAS
       value: "2"
   externalAccess:
-    enabled: true
-    autoDiscovery:
-      enabled: false
-    broker:
-      service:
-        type: NodePort
-        domain: localhost
-        ports:
-          external: 9094
-        nodePorts:
-          - 30001
-          - 30002
-          - 30003
+    enabled: false
 
 kafka-ui:
   enabled: true
@@ -91,11 +92,7 @@ kafka-ui:
       DYNAMIC_CONFIG_ENABLED: "true"
       SERVER_SERVLET_CONTEXT_PATH: "/kafka"
   ingress:
-    enabled: true
-    ingressClassName: "nginx"
-    host: "localhost"
-    path: "/kafka"
-    pathType: "Prefix"
+    enabled: false
 
 elasticsearch:
   enabled: true
@@ -157,14 +154,14 @@ kibana:
     tag: 9.1.2-debian-12-r0
   elasticsearch:
     hosts:
-      - "resurse-app-elasticsearch"
+      - "elasticsearch"
     port: 9200
     security:
       auth:
         enabled: true
         kibanaPassword: "paassw0rd"
         createSystemUser: true
-        elasticsearchPasswordSecret: "resurse-app-elasticsearch"
+        elasticsearchPasswordSecret: "elasticsearch"
       tls:
         enabled: true
         verificationMode: "none"
@@ -197,14 +194,7 @@ kibana:
       memory: 1Gi
 
   ingress:
-    enabled: true
-    ingressClassName: "nginx"
-    hostname: "localhost"
-    path: "/kibana"
-    pathType: "Prefix"
-    annotations:
-      # Aceasta forțează Nginx să paseze prefixul corect către aplicație
-      nginx.ingress.kubernetes.io/x-forwarded-prefix: "/kibana"
+    enabled: false
 
 logstash:
   enabled: true
@@ -214,13 +204,13 @@ logstash:
     tag: 9.1.2-debian-12-r0
   extraEnvVars:
     - name: ELASTICSEARCH_HOST
-      value: "resurse-app-elasticsearch"
+      value: "elasticsearch"
     - name: ELASTICSEARCH_PORT
       value: "9200"
     - name: ES_PASSWORD
       valueFrom:
         secretKeyRef:
-          name: resurse-app-elasticsearch
+          name: elasticsearch
           key: elasticsearch-password # cheia găsită la pasul 1
   output: |-
     elasticsearch {
@@ -255,20 +245,24 @@ logstash:
 # testing-app-deps:
 keycloak:
   enabled: true
-  image: 
-    registry: public.ecr.aws
-    repository: bitnami/keycloak
-    tag: 26.1.3
+  usePasswordFiles: false
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/keycloak
+    tag: 26.1.3-debian-12-r0
     pullPolicy: IfNotPresent
     debug: false
   auth:
     adminUser: "admin"
-    adminPassword: "StrongPassword123!" # Evită "admin" ca parolă, unele imagini o resping
+    adminPassword: "StrongPassword123!"
   production: false
-  
+
+  postgresql:
+    enabled: false
+
   externalDatabase:
-    host: "mysql"
-    port: 3306
+    host: "postgresql"
+    port: 5432
     user: "keycloak"
     password: "password123"
     database: "keycloak"
@@ -288,8 +282,6 @@ keycloak:
   readinessProbe:
     enabled: false
   livenessProbe:
-    enabled: false
-  postgresql:
     enabled: false
 
   extraVolumes:

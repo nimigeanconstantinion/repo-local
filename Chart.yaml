@@ -9,6 +9,10 @@ dependencies:
     version: "14.0.2"
     repository: "https://charts.bitnami.com/bitnami"
     condition: mysql.enabled
+  - name: postgresql
+    version: "16.7.26"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
   - name: kafka-ui
     version: "1.6.0"
     repository: "https://ui.charts.kafbat.io/"

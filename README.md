@@ -9,7 +9,6 @@ Umbrella Helm chart for external dependencies (MySQL, Kafka, ELK, Keycloak).
 - `templates/`: local templates owned by this chart.
 - `files/`: static files consumed by templates (for example Keycloak realm export).
 - `values.yaml`: base/default values.
-- `values.local.yaml`: local machine overrides.
 - `values-dev.yaml`, `values-staging.yaml`, `values-prod.yaml`, `values-bgd.yaml`: environment overlays.
 - `RUN-LOCAL.txt`: local run/deploy commands.
 - `RUN-ENV.txt`: environment run/deploy commands.
@@ -19,7 +18,7 @@ Umbrella Helm chart for external dependencies (MySQL, Kafka, ELK, Keycloak).
 
 ```bash
 helm dependency update
-helm upgrade --install testing-app-deps . -n <namespace> \
+helm upgrade --install resurse-testing-app . -n <namespace> \
   -f values.yaml \
   -f values-<env>.yaml
 ```
@@ -27,9 +26,9 @@ helm upgrade --install testing-app-deps . -n <namespace> \
 Local example:
 
 ```bash
-helm upgrade --install testing-app-deps . -n <namespace> \
+helm upgrade --install resurse-testing-app . -n <namespace> \
   -f values.yaml \
-  -f values.local.yaml
+  -f values-bgd.yaml
 ```
 
 ## Keycloak realm import

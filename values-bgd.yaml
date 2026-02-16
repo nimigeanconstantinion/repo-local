@@ -1,3 +1,41 @@
+postgresql:
+  auth:
+    password: "password123"
+    postgresPassword: "password123"
+
+mysql:
+  auth:
+    rootPassword: "root"
+    password: "kJ4PkjxJed"
+  service:
+    type: NodePort
+    nodePorts:
+      mysql: 30006
+
+kafka:
+  externalAccess:
+    enabled: true
+    autoDiscovery:
+      enabled: false
+    broker:
+      service:
+        type: NodePort
+        domain: localhost
+        ports:
+          external: 9094
+        nodePorts:
+          - 30001
+          - 30002
+          - 30003
+
+kafka-ui:
+  ingress:
+    enabled: true
+    ingressClassName: "nginx"
+    host: "localhost"
+    path: "/kafka"
+    pathType: "Prefix"
+
 elasticsearch:
   security:
     elasticPassword: "paassw0rd"
@@ -5,13 +43,13 @@ elasticsearch:
 logstash:
   extraEnvVars:
     - name: ELASTICSEARCH_HOST
-      value: "resurse-app-elasticsearch"
+      value: "resurse-testing-app-elasticsearch"
     - name: ELASTICSEARCH_PORT
       value: "9200"
     - name: ES_PASSWORD
       valueFrom:
         secretKeyRef:
-          name: resurse-app-elasticsearch
+          name: resurse-testing-app-elasticsearch
           key: elasticsearch-password
   service:
     type: NodePort
@@ -24,7 +62,32 @@ logstash:
 
 kibana:
   elasticsearch:
+    hosts:
+      - "resurse-testing-app-elasticsearch"
     security:
       auth:
         kibanaPassword: "paassw0rd"
-        elasticsearchPasswordSecret: "resurse-app-elasticsearch"
+        elasticsearchPasswordSecret: "resurse-testing-app-elasticsearch"
+  ingress:
+    enabled: true
+    ingressClassName: "nginx"
+    hostname: "localhost"
+    path: "/kibana"
+    pathType: "Prefix"
+    annotations:
+      nginx.ingress.kubernetes.io/x-forwarded-prefix: "/kibana"
+
+keycloak:
+  httpRelativePath: "/keycloak"
+  auth:
+    adminPassword: "StrongPassword123!"
+  externalDatabase:
+    password: "password123"
+  ingress:
+    enabled: true
+    ingressClassName: "nginx"
+    hostname: "localhost"
+    path: "/keycloak"
+    pathType: "Prefix"
+    annotations:
+      nginx.ingress.kubernetes.io/x-forwarded-prefix: "/keycloak"

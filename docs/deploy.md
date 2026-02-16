@@ -7,12 +7,12 @@
   - `values-dev.yaml`
   - `values-staging.yaml`
   - `values-prod.yaml`
-  - `values.local.yaml` for local cluster/dev machine
+  - `values-bgd.yaml` for local cluster/dev machine
 
 ## Recommended command
 
 ```bash
-helm upgrade --install testing-app-deps . -n <namespace> \
+helm upgrade --install resurse-testing-app . -n <namespace> \
   -f values.yaml \
   -f values-<env>.yaml
 ```
@@ -21,5 +21,5 @@ helm upgrade --install testing-app-deps . -n <namespace> \
 
 ```bash
 helm lint .
-helm template testing-app-deps . -f values.yaml -f values-<env>.yaml
+helm template resurse-testing-app . -f values.yaml -f values-<env>.yaml
 ```

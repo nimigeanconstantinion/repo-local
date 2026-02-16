@@ -16,7 +16,7 @@ helm dependency update
 helm lint .
 
 5) Vezi manifestele:
-helm template testing-app-deps . -f values.yaml -f values-<env>.yaml
+helm template resurse-testing-app . -f values.yaml -f values-<env>.yaml
 
 6) Deploy:
-helm upgrade --install testing-app-deps . -n <namespace> -f values.yaml -f values-<env>.yaml
+helm upgrade --install resurse-testing-app . -n <namespace> -f values.yaml -f values-<env>.yaml
