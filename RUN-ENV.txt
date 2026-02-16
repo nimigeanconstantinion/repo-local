@@ -1,0 +1,22 @@
+RULARE PE ENV (dev/staging/prod)
+
+1) Intra in proiect:
+cd /Users/bogdandaniel/Documents/proiecte-elevi/contantin-helm-external-libraries
+
+2) Alege fisierul de env:
+- dev: values-dev.yaml
+- staging: values-staging.yaml
+- prod: values-prod.yaml
+- bgd: values-bgd.yaml
+
+3) Actualizeaza dependintele:
+helm dependency update
+
+4) Verifica chart-ul:
+helm lint .
+
+5) Vezi manifestele:
+helm template testing-app-deps . -f values.yaml -f values-<env>.yaml
+
+6) Deploy:
+helm upgrade --install testing-app-deps . -n <namespace> -f values.yaml -f values-<env>.yaml

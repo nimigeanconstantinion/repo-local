@@ -1,0 +1,10 @@
+mysql:
+  service:
+    type: ClusterIP
+
+kafka:
+  externalAccess:
+    enabled: false
+
+keycloak:
+  production: true

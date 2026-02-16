@@ -1,0 +1,16 @@
+RULARE LOCALA (ex: minikube/docker-desktop)
+
+1) Intra in proiect:
+cd /Users/bogdandaniel/Documents/proiecte-elevi/contantin-helm-external-libraries
+
+2) Actualizeaza dependintele:
+helm dependency update
+
+3) Verifica chart-ul:
+helm lint .
+
+4) Vezi manifestele generate:
+helm template testing-app-deps . -f values.yaml -f values.local.yaml
+
+5) Deploy local:
+helm upgrade --install testing-app-deps . -n <namespace> -f values.yaml -f values.local.yaml

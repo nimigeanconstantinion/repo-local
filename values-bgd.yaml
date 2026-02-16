@@ -1,12 +1,6 @@
-mysql:
-  auth:
-    rootPassword: "root"
-    password: "password123"
-  primary:
-    service:
-      type: NodePort
-      nodePorts:
-        mysql: 30006
+elasticsearch:
+  security:
+    elasticPassword: "paassw0rd"
 
 logstash:
   extraEnvVars:
@@ -28,19 +22,9 @@ logstash:
         protocol: TCP
         nodePort: 30544
 
-elasticsearch:
-  security:
-    elasticPassword: "paassw0rd"
-
 kibana:
   elasticsearch:
     security:
       auth:
         kibanaPassword: "paassw0rd"
         elasticsearchPasswordSecret: "resurse-app-elasticsearch"
-
-keycloak:
-  auth:
-    adminPassword: "StrongPassword123!"
-  externalDatabase:
-    password: "password123"

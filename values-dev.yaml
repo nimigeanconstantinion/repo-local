@@ -1,0 +1,24 @@
+global:
+  security:
+    allowInsecureImages: true
+
+mysql:
+  service:
+    type: ClusterIP
+
+kafka:
+  controller:
+    replicaCount: 1
+  broker:
+    replicaCount: 1
+  externalAccess:
+    enabled: false
+
+elasticsearch:
+  master:
+    replicaCount: 1
+  data:
+    replicaCount: 1
+
+keycloak:
+  production: false
