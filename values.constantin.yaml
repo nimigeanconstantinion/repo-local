@@ -105,9 +105,16 @@ kafka-ui:
     pathType: "Prefix"
 
 prometheus:
+  enabled: true
   image:
     registry: docker.io
     repository: bitnamilegacy/prometheus
     tag:  3.5.0-debian-12-r3
-    digest: ""
     pullPolicy: IfNotPresent
+  alertmanager:
+    image:
+      registry: docker.io
+      repository: bitnamilegacy/alertmanager
+      tag: 0.28.1-debian-12-r15  # Schimbă aici cu un tag valid
+      pullPolicy: IfNotPresent
+      
