@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.testing.app.publisher.model.MessageEvent;
 import com.testing.app.publisher.service.MessagePublisherService;
 
+
+
+
 @RestController
 @RequestMapping("/api/messages")
 public class MessageController {
@@ -27,8 +30,10 @@ public class MessageController {
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public MessageEvent create(@Valid @RequestBody MessageRequest request) {
+
     return publisherService.publishCreate(request.getPayload());
   }
+
 
   @PutMapping("/{id}")
   public MessageEvent update(@PathVariable String id, @Valid @RequestBody MessageRequest request) {

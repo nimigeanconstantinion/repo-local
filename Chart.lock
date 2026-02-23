@@ -23,5 +23,8 @@ dependencies:
 - name: keycloak
   repository: https://charts.bitnami.com/bitnami
   version: 25.2.0
-digest: sha256:f98c8a7fb8f0d0c66c99b179cccf6d89d45d4024469ee204138568ec065fab2e
-generated: "2026-02-16T20:17:25.257041+02:00"
+- name: prometheus
+  repository: https://charts.bitnami.com/bitnami
+  version: 2.1.23
+digest: sha256:27ca975591671e10ad7846dd6daeaf82a19f21829259823da20ed5c55256a5cc
+generated: "2026-02-23T17:00:09.6470384+02:00"

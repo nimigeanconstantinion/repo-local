@@ -5,8 +5,8 @@ app:
   kafka:
     topic: testing-app-topic
   elk:
-    elasticsearch-uri: https://resurse-app-elasticsearch:9200
-    kibana-base-url: http://resurse-app-kibana:5601/kibana
+    elasticsearch-uri: https://my-app-elasticsearch:9200
+    kibana-base-url: http://localhost/kibana
     logstash-host: 127.0.0.1
     logstash-port: 30544
 
@@ -21,6 +21,7 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring.json.add.type.headers: false
+
 
 springdoc:
   swagger-ui:

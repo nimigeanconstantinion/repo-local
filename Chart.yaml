@@ -37,3 +37,7 @@ dependencies:
     version: "25.2.0"
     repository: "https://charts.bitnami.com/bitnami"
     condition: keycloak.enabled
+  - name: prometheus
+    version: "2.1.23"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: prometheus.enabled
