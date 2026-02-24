@@ -26,5 +26,8 @@ dependencies:
 - name: prometheus
   repository: https://charts.bitnami.com/bitnami
   version: 2.1.23
-digest: sha256:27ca975591671e10ad7846dd6daeaf82a19f21829259823da20ed5c55256a5cc
-generated: "2026-02-23T17:00:09.6470384+02:00"
+- name: grafana
+  repository: https://charts.bitnami.com/bitnami
+  version: 12.1.8
+digest: sha256:cfe3bdc8833636032e9d037d2e39ecc27642683b76a55016c5270db7f5f3657a
+generated: "2026-02-24T12:10:59.781025+02:00"
