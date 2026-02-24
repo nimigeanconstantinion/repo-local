@@ -104,17 +104,89 @@ kafka-ui:
     path: "/kafka"
     pathType: "Prefix"
 
+# prometheus:
+#   enabled: true
+#   server:
+#     image:
+#       registry: docker.io
+#       repository: bitnamilegacy/prometheus
+#       tag:  3.5.0-debian-12-r3
+#       pullPolicy: IfNotPresent
+
+#     extraScrapeConfigs:
+#       - job_name: 'spring-boot-apps'
+#         metrics_path: '/actuator/prometheus'
+#         scrape_interval: 5s
+#         static_configs:
+#           - targets:
+#               - 'publisher-service.default.svc.cluster.local:8081'
+
+#         ## Persistența datelor (echivalentul prometheus-pvc)
+#     persistence:
+#           enabled: true
+#           ## Lăsăm existingClaim gol pentru ca Helm să creeze unul nou cu setările de mai jos
+#           existingClaim: ""
+#           accessModes:
+#             - ReadWriteOnce
+#           size: 10Gi
+#             ## Configurare Ingress
+#     ingress:
+#       enabled: true
+#       ingressClassName: "nginx"
+#       hostname: "localhost"
+#       path: "/prometheus"
+#       pathType: "Prefix"
+#       annotations:
+#         nginx.ingress.kubernetes.io/x-forwarded-prefix: "/prometheus"   
+
+#   alertmanager:
+#     image:
+#       registry: docker.io
+#       repository: bitnamilegacy/alertmanager
+#       tag: 0.28.1-debian-12-r15  # Schimbă aici cu un tag valid
+#       pullPolicy: IfNotPresent
+      
 prometheus:
   enabled: true
-  image:
-    registry: docker.io
-    repository: bitnamilegacy/prometheus
-    tag:  3.5.0-debian-12-r3
-    pullPolicy: IfNotPresent
-  alertmanager:
+  server:
     image:
       registry: docker.io
-      repository: bitnamilegacy/alertmanager
-      tag: 0.28.1-debian-12-r15  # Schimbă aici cu un tag valid
+      repository: bitnamilegacy/prometheus # Folosește bitnami/ nu bitnamilegacy/
+      tag: 3.5.0-debian-12-r3        # Versiune stabilă
       pullPolicy: IfNotPresent
-      
+
+
+    extraScrapeConfigs:
+      - job_name: 'spring-boot-apps'
+        metrics_path: '/actuator/prometheus'
+        scrape_interval: 5s
+        static_configs:
+          - targets:
+              - 'publisher-service.default.svc.cluster.local:8081'
+
+    ## Persistența trebuie să fie la nivelul 'server'
+    persistence:
+      enabled: true
+      existingClaim: ""
+      accessModes:
+        - ReadWriteOnce
+      size: 10Gi
+
+    ## Ingress trebuie să fie la nivelul 'server'
+    ingress:
+      enabled: true
+      ingressClassName: "nginx"
+      hostname: "localhost"
+      path: "/prometheus"
+      pathType: "Prefix"
+      annotations:
+        nginx.ingress.kubernetes.io/x-forwarded-prefix: "/prometheus"
+
+  ## Alertmanager trebuie să fie subordonat lui 'prometheus'
+  alertmanager:
+    enabled: true
+    image:
+      registry: docker.io
+      repository: bitnamilegacy/alertmanager # Folosește bitnami/
+      tag: 0.28.1-debian-12-r15        # Acest tag EXISTĂ sigur
+      pullPolicy: IfNotPresent

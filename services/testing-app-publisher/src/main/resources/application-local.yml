@@ -2,6 +2,7 @@ server:
   port: 8081
 
 app:
+
   kafka:
     topic: testing-app-topic
   elk:
@@ -14,6 +15,8 @@ logging:
   config: classpath:logback-spring.xml
 
 spring:
+  application:
+    name: publisher-service
   kafka:
     bootstrap-servers: localhost:30001
     producer:
@@ -28,3 +31,23 @@ springdoc:
     path: /swagger-ui.html
   api-docs:
     path: /v3/api-docs
+
+management:
+  tracing:
+    enabled: false
+    sampling:
+      probability: 1
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show:
+        details: always
+    prometheus:
+      enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.request: true
