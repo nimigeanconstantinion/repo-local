@@ -1,11 +1,14 @@
 postgresql:
   auth:
+    username: "keycloak"
+    database: "keycloak"
     password: "password123"
     postgresPassword: "password123"
 
 mysql:
   auth:
     rootPassword: "root"
+    database: "my_database"
     password: "kJ4PkjxJed"
   service:
     type: NodePort
@@ -37,19 +40,20 @@ kafka-ui:
     pathType: "Prefix"
 
 elasticsearch:
+  enabled: true
   security:
     elasticPassword: "paassw0rd"
 
 logstash:
   extraEnvVars:
     - name: ELASTICSEARCH_HOST
-      value: "resurse-testing-app-elasticsearch"
+      value: "resurse-app-elasticsearch"
     - name: ELASTICSEARCH_PORT
       value: "9200"
     - name: ES_PASSWORD
       valueFrom:
         secretKeyRef:
-          name: resurse-testing-app-elasticsearch
+          name: resurse-app-elasticsearch
           key: elasticsearch-password
   service:
     type: NodePort
@@ -63,11 +67,11 @@ logstash:
 kibana:
   elasticsearch:
     hosts:
-      - "resurse-testing-app-elasticsearch"
+      - "resurse-app-elasticsearch"
     security:
       auth:
         kibanaPassword: "paassw0rd"
-        elasticsearchPasswordSecret: "resurse-testing-app-elasticsearch"
+        elasticsearchPasswordSecret: "resurse-app-elasticsearch"
   ingress:
     enabled: true
     ingressClassName: "nginx"
@@ -78,10 +82,15 @@ kibana:
       nginx.ingress.kubernetes.io/x-forwarded-prefix: "/kibana"
 
 keycloak:
+  enabled: true
   httpRelativePath: "/keycloak"
   auth:
+    adminUser: "admin"
     adminPassword: "StrongPassword123!"
   externalDatabase:
+    host: "postgresql"
+    port: 5432
+    user: "keycloak"
     password: "password123"
   ingress:
     enabled: true
@@ -91,3 +100,35 @@ keycloak:
     pathType: "Prefix"
     annotations:
       nginx.ingress.kubernetes.io/x-forwarded-prefix: "/keycloak"
+
+grafana:
+  enabled: true
+  admin:
+    user: "admin"
+    password: "StrongPassword123!"   # local/demo only; rotate for real envs
+  ingress:
+    enabled: true
+    hostname: "localhost"
+    path: "/grafana(/|$)(.*)"
+    pathType: ImplementationSpecific
+
+prometheus:
+  enabled: true
+  alertmanager:
+    ingress:
+      enabled: true
+      hostname: "localhost"
+      path: "/alertmanager(/|$)(.*)"
+      pathType: ImplementationSpecific
+      annotations:
+        nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+        nginx.ingress.kubernetes.io/use-regex: "true"
+  server:
+    ingress:
+      enabled: true
+      hostname: "localhost"
+      path: "/prometheus(/|$)(.*)"
+      pathType: ImplementationSpecific
+      annotations:
+        nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+        nginx.ingress.kubernetes.io/use-regex: "true"
