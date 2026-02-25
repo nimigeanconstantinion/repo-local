@@ -112,22 +112,30 @@ grafana:
     path: "/grafana(/|$)(.*)"
     pathType: ImplementationSpecific
 
-prometheus:
+# prometheus:
   enabled: true
+
   alertmanager:
     ingress:
       enabled: true
-      hostname: "localhost"
-      path: "/alertmanager(/|$)(.*)"
+      ingressClassName: nginx
+      hosts:
+        - localhost
+      paths:
+        - /alertmanager(/|$)(.*)
       pathType: ImplementationSpecific
       annotations:
         nginx.ingress.kubernetes.io/rewrite-target: "/$2"
         nginx.ingress.kubernetes.io/use-regex: "true"
+
   server:
     ingress:
       enabled: true
-      hostname: "localhost"
-      path: "/prometheus(/|$)(.*)"
+      ingressClassName: nginx
+      hosts:
+        - localhost
+      paths:
+        - /prometheus(/|$)(.*)
       pathType: ImplementationSpecific
       annotations:
         nginx.ingress.kubernetes.io/rewrite-target: "/$2"

@@ -305,8 +305,8 @@ grafana:
     password: ""               # set in values-<env>.yaml
   image:
     registry: docker.io
-    repository: bitnamilegacy/grafana
-    tag: 12.1.1-debian-12-r1
+    repository: grafana/grafana
+    tag: 12.4.0
   grafana:
     extraEnvVars:
       - name: GF_SERVER_ROOT_URL
@@ -328,9 +328,9 @@ prometheus:
   enabled: true
   alertmanager:
     image:
-      registry: docker.io
-      repository: bitnamilegacy/alertmanager
-      tag: 0.28.1-debian-12-r15
+      # registry: quay.io
+      repository: quay.io/prometheus/alertmanager
+      tag: v0.31.0
     routePrefix: "/"
     ingress:
       enabled: false           # override per env
@@ -340,13 +340,15 @@ prometheus:
       pathType: "Prefix"
   server:
     image:
-      registry: docker.io
-      repository: bitnamilegacy/prometheus
-      tag: 3.5.0-debian-12-r3
+      # registry: quay.io
+      repository: quay.io/prometheus/prometheus
+      tag: v3.9.1
     routePrefix: "/"
     ingress:
       enabled: false           # override per env
       ingressClassName: "nginx"
-      hostname: ""
-      path: "/prometheus"
+      hosts:
+        - localhost
+      paths:
+        - /prometheus      
       pathType: "Prefix"

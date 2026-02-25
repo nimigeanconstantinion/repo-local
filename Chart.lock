@@ -24,10 +24,10 @@ dependencies:
   repository: https://charts.bitnami.com/bitnami
   version: 25.2.0
 - name: prometheus
-  repository: https://charts.bitnami.com/bitnami
-  version: 2.1.23
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 28.9.1
 - name: grafana
-  repository: https://charts.bitnami.com/bitnami
-  version: 12.1.8
-digest: sha256:cfe3bdc8833636032e9d037d2e39ecc27642683b76a55016c5270db7f5f3657a
-generated: "2026-02-24T12:10:59.781025+02:00"
+  repository: https://grafana-community.github.io/helm-charts/
+  version: 11.2.0
+digest: sha256:100873a74b443fa1f995db019420c53ee4eb99510b1eef584ed881a2259ea0d2
+generated: "2026-02-25T17:58:24.3297821+02:00"
