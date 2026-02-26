@@ -1,3 +1,7 @@
+global:
+  security:
+    allowInsecureImages: true
+
 postgresql:
   auth:
     password: "password123"
@@ -43,13 +47,13 @@ elasticsearch:
 logstash:
   extraEnvVars:
     - name: ELASTICSEARCH_HOST
-      value: "resurse-testing-app-elasticsearch"
+      value: "resurse-app-elasticsearch"
     - name: ELASTICSEARCH_PORT
       value: "9200"
     - name: ES_PASSWORD
       valueFrom:
         secretKeyRef:
-          name: resurse-testing-app-elasticsearch
+          name: resurse-app-elasticsearch
           key: elasticsearch-password
   service:
     type: NodePort
@@ -63,11 +67,11 @@ logstash:
 kibana:
   elasticsearch:
     hosts:
-      - "resurse-testing-app-elasticsearch"
+      - "resurse-app-elasticsearch"
     security:
       auth:
         kibanaPassword: "paassw0rd"
-        elasticsearchPasswordSecret: "resurse-testing-app-elasticsearch"
+        elasticsearchPasswordSecret: "resurse-app-elasticsearch"
   ingress:
     enabled: true
     ingressClassName: "nginx"
@@ -91,3 +95,33 @@ keycloak:
     pathType: "Prefix"
     annotations:
       nginx.ingress.kubernetes.io/x-forwarded-prefix: "/keycloak"
+
+prometheus:
+  server:
+    ingress:
+      enabled: true
+      ingressClassName: "nginx"
+      hosts:
+        - "localhost"
+      path: "/prometheus"
+      pathType: "Prefix"
+    prefixURL: /prometheus
+    extraArgs:
+      web.external-url: "http://localhost/prometheus"
+
+grafana:
+  adminPassword: "admin"
+  env:
+    GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s/grafana"
+    GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+  ingress:
+    enabled: true
+    ingressClassName: "nginx"
+    hosts:
+      - "localhost"
+    path: "/grafana"
+    pathType: "Prefix"
+  grafana.ini:
+    server:
+      root_url: "%(protocol)s://%(domain)s/grafana"
+      serve_from_sub_path: true
