@@ -129,16 +129,16 @@ grafana:
 kong:
   enabled: true
   postgresql:
-    enabled: false
-  extraEnvVars:
-    - name: KONG_PROXY_LISTEN
-      value: "0.0.0.0:5000"
-    - name: KONG_ADMIN_LISTEN
-      value: "0.0.0.0:8001"
-    - name: KONG_ADMIN_GUI_LISTEN
-      value: "0.0.0.0:8002"
-    - name: KONG_ADMIN_GUI_URL
-      value: "http://kong-manager.local"
-    - name: KONG_ADMIN_GUI_API_URL
-      value: "http://kong-admin.local"    
-  
+    enabled: true
+  kong:
+    extraEnvVars:
+      - name: KONG_PROXY_LISTEN
+        value: "0.0.0.0:5000"
+      - name: KONG_ADMIN_LISTEN
+        value: "0.0.0.0:8001"
+      - name: KONG_ADMIN_GUI_LISTEN
+        value: "0.0.0.0:8002"
+      - name: KONG_ADMIN_GUI_URL
+        value: "http://kong-manager.local"
+      - name: KONG_ADMIN_GUI_API_URL
+        value: "http://kong-admin.local"

@@ -381,7 +381,7 @@ kong:
       user: kong
       password: kong
       database: kong
-  containerPorts:
-    proxy: 5000
-    admin: 8001
-    gui: 8002
+  kong:
+    containerPorts:
+      proxyHttp: 5000
+      adminHttp: 8001
