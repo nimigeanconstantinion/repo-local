@@ -345,3 +345,43 @@ grafana:
     server:
       root_url: "%(protocol)s://%(domain)s/grafana"
       serve_from_sub_path: true
+
+kong:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/kong
+    tag: 3.9.1-debian-12-r10
+    digest: ""
+    pullPolicy: IfNotPresent
+
+
+  ingressController:
+    image:
+      registry: docker.io
+      repository: bitnamilegacy/kong-ingress-controller
+      tag: 3.5.1-debian-12-r3
+      digest: ""
+      pullPolicy: IfNotPresent
+  ## All of these values are only used when postgresql.enabled is set to false
+  ## @param postgresql.external.host Database host
+  ## @param postgresql.external.port Database port number
+  ## @param postgresql.external.user Non-root username for Kong
+  ## @param postgresql.external.password Password for the non-root username for Kong
+  ## @param postgresql.external.database Kong database name
+  ## @param postgresql.external.existingSecret Name of an existing secret resource containing the database credentials
+  ## @param postgresql.external.existingSecretPasswordKey Name of an existing secret key containing the database credentials
+  database: postgresql
+
+  postgresql:
+    enabled: true
+    external:
+      host: postgresql
+      port: 5432
+      user: kong
+      password: kong
+      database: kong
+  containerPorts:
+    proxy: 5000
+    admin: 8001
+    gui: 8002

@@ -45,3 +45,7 @@ dependencies:
     version: "10.5.15"
     repository: "https://grafana.github.io/helm-charts"
     condition: grafana.enabled
+  - name: kong
+    version: "15.4.22"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: kong.enabled
