@@ -374,7 +374,7 @@ kong:
   database: postgresql
 
   postgresql:
-    enabled: true
+    enabled: false
     external:
       host: postgresql
       port: 5432
