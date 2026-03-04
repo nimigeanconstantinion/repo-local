@@ -47,13 +47,13 @@ elasticsearch:
 logstash:
   extraEnvVars:
     - name: ELASTICSEARCH_HOST
-      value: "resurse-app-elasticsearch"
+      value: "resurse-testing-app-elasticsearch"
     - name: ELASTICSEARCH_PORT
       value: "9200"
     - name: ES_PASSWORD
       valueFrom:
         secretKeyRef:
-          name: resurse-app-elasticsearch
+          name: resurse-testing-app-elasticsearch
           key: elasticsearch-password
   service:
     type: NodePort
@@ -67,11 +67,11 @@ logstash:
 kibana:
   elasticsearch:
     hosts:
-      - "resurse-app-elasticsearch"
+      - "resurse-testing-app-elasticsearch"
     security:
       auth:
         kibanaPassword: "paassw0rd"
-        elasticsearchPasswordSecret: "resurse-app-elasticsearch"
+        elasticsearchPasswordSecret: "resurse-testing-app-elasticsearch"
   ingress:
     enabled: true
     ingressClassName: "nginx"
@@ -125,3 +125,115 @@ grafana:
     server:
       root_url: "%(protocol)s://%(domain)s/grafana"
       serve_from_sub_path: true
+
+kong:
+  enabled: true
+  replicaCount: 1
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/kong
+    tag: 3.9.1-debian-12-r10
+    digest: ""
+    pullPolicy: IfNotPresent
+  ingressController:
+    image:
+      registry: docker.io
+      repository: bitnamilegacy/kong-ingress-controller
+      tag: 3.5.1-debian-12-r3
+      digest: ""
+      pullPolicy: IfNotPresent
+  database: "off"
+  postgresql:
+    enabled: false
+  kong:
+    containerPorts:
+      proxyHttp: 5000
+      adminHttp: 8001
+    extraEnvVars:
+      - name: KONG_PROXY_LISTEN
+        value: "0.0.0.0:5000"
+      - name: KONG_ADMIN_LISTEN
+        value: "0.0.0.0:8001"
+      - name: KONG_ADMIN_GUI_LISTEN
+        value: "0.0.0.0:8002"
+      - name: KONG_ADMIN_GUI_URL
+        value: "http://localhost/kong-manager"
+      - name: KONG_ADMIN_GUI_API_URL
+        value: "http://localhost/kong-admin"
+  service:
+    type: ClusterIP
+    exposeAdmin: true
+    extraPorts:
+      - name: admin-gui
+        port: 8002
+        targetPort: 8002
+        protocol: TCP
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hostname: localhost
+    path: /kong(/|$)(.*)
+    pathType: ImplementationSpecific
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    extraRules:
+      - host: localhost
+        http:
+          paths:
+            - path: /kong-admin(/|$)(.*)
+              pathType: ImplementationSpecific
+              backend:
+                service:
+                  name: "{{ include \"common.names.fullname\" $ }}"
+                  port:
+                    name: http-admin
+            - path: /kong-manager(/|$)(.*)
+              pathType: ImplementationSpecific
+              backend:
+                service:
+                  name: "{{ include \"common.names.fullname\" $ }}"
+                  port:
+                    name: admin-gui
+            - path: /konga(/|$)(.*)
+              pathType: ImplementationSpecific
+              backend:
+                service:
+                  name: "{{ .Release.Name }}-konga"
+                  port:
+                    number: 80
+
+konga:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: pantsel/konga
+    tag: "0.14.9"
+    pullPolicy: IfNotPresent
+  config:
+    node_env: development
+    token_secret: "konga-secret-bgd"
+    db_adapter: "localdb"
+    konga_node_data: "/etc/konga-seed/kong_node.data"
+    konga_user_data: "/etc/konga-seed/userdb.data"
+  extraVolumes:
+    - name: konga-seed
+      configMap:
+        name: konga-kong-node-seed
+  extraVolumeMounts:
+    - name: konga-seed
+      mountPath: /etc/konga-seed
+      readOnly: true
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  service:
+    type: ClusterIP
+    port: 80
+  ingress:
+    enabled: false

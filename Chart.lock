@@ -32,5 +32,8 @@ dependencies:
 - name: kong
   repository: https://charts.bitnami.com/bitnami
   version: 15.4.22
-digest: sha256:bd9f20bd83615808bd05ae58fc7e3ba5d9e1e9a23034f3d4b0c1ebc6068531ab
-generated: "2026-03-02T19:32:03.120038+02:00"
+- name: konga
+  repository: https://lakshanmamalgaha96.github.io/konga-helm
+  version: 1.1.0
+digest: sha256:c0ea8418cb7e11644ffa5625180eb97c79aac7728cb0de90f6a86ec549fed596
+generated: "2026-03-04T19:19:32.802737+02:00"
