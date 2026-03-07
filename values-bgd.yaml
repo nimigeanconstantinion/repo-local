@@ -136,15 +136,29 @@ kong:
     digest: ""
     pullPolicy: IfNotPresent
   ingressController:
+    enabled: false
     image:
       registry: docker.io
       repository: bitnamilegacy/kong-ingress-controller
       tag: 3.5.1-debian-12-r3
       digest: ""
       pullPolicy: IfNotPresent
-  database: "off"
+  database: "postgresql"
   postgresql:
     enabled: false
+    external:
+      host: postgresql
+      port: 5432
+      user: postgres
+      password: "password123"
+      database: postgres
+      existingSecret: postgresql
+      existingSecretPasswordKey: postgres-password
+  networkPolicy:
+    extraIngress:
+      - ports:
+          - port: 8002
+            protocol: TCP
   kong:
     containerPorts:
       proxyHttp: 5000
@@ -207,16 +221,12 @@ konga:
   config:
     node_env: development
     token_secret: "konga-secret-bgd"
-    konga_node_data: "/etc/konga-seed/kong_node.data"
-    konga_user_data: "/etc/konga-seed/userdb.data"
-  extraVolumes:
-    - name: konga-seed
-      configMap:
-        name: konga-kong-node-seed
-  extraVolumeMounts:
-    - name: konga-seed
-      mountPath: /etc/konga-seed
-      readOnly: true
+    db_adapter: mysql
+    db_host: mysql
+    db_port: 3306
+    db_user: konga
+    db_password: "konga123"
+    db_database: konga_database
   resources:
     requests:
       cpu: 200m
@@ -228,4 +238,16 @@ konga:
     type: ClusterIP
     port: 80
   ingress:
-    enabled: false
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+      nginx.ingress.kubernetes.io/proxy-redirect-from: /
+      nginx.ingress.kubernetes.io/proxy-redirect-to: /konga/
+      nginx.ingress.kubernetes.io/x-forwarded-prefix: /konga
+    hosts:
+      - host: localhost
+        paths:
+          - /konga(/|$)(.*)
+    tls: []
