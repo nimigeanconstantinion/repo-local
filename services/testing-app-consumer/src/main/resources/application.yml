@@ -1,20 +1,27 @@
 server:
-  port: 8082
+  port: ${SERVER_PORT:8082}
+  forward-headers-strategy: framework
+  tomcat:
+    use-relative-redirects: true
+  servlet:
+    context-path: ${SERVER_SERVLET_CONTEXT_PATH:/consumer}
 
 app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost,http://localhost:3000,http://localhost:4200}
   kafka:
-    topic: testing-app-topic
+    topic: ${APP_KAFKA_TOPIC:testing-app-topic}
   elk:
-    elasticsearch-uri: https://resurse-app-elasticsearch:9200
-    kibana-base-url: http://resurse-app-kibana:5601/kibana
-    logstash-host: 127.0.0.1
-    logstash-port: 30544
+    elasticsearch-uri: ${ELASTICSEARCH_URI:https://resurse-app-elasticsearch:9200}
+    kibana-base-url: ${KIBANA_BASE_URL:http://localhost/kibana}
+    logstash-host: ${LOGSTASH_HOST:127.0.0.1}
+    logstash-port: ${LOGSTASH_PORT:30544}
 
 spring:
   datasource:
-    url: jdbc:mysql://127.0.0.1:30006/my_database?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
-    username: root
-    password: root
+    url: ${MYSQL_URL:jdbc:mysql://127.0.0.1:3306/my_database?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:root}
   jpa:
     hibernate:
       ddl-auto: update
@@ -22,9 +29,9 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
   Kafka:
-    bootstrap-servers: localhost:30001
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:30001}
     consumer:
-      group-id: testing-app-consumer-local
+      group-id: ${KAFKA_CONSUMER_GROUP_ID:testing-app-consumer-local}
       enable-auto-commit: true
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -37,6 +44,8 @@ spring:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+    config-url: ../v3/api-docs/swagger-config
+    url: ../v3/api-docs
   api-docs:
     path: /v3/api-docs
 logging:

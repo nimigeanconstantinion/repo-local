@@ -1,21 +1,28 @@
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
+  forward-headers-strategy: framework
+  tomcat:
+    use-relative-redirects: true
+  servlet:
+    context-path: ${SERVER_SERVLET_CONTEXT_PATH:/publisher}
 
 app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost,http://localhost:3000,http://localhost:4200}
   kafka:
-    topic: testing-app-topic
+    topic: ${APP_KAFKA_TOPIC:testing-app-topic}
   elk:
-    elasticsearch-uri: https://resurse-app-elasticsearch:9200
-    kibana-base-url: http://resurse-app-kibana:5601/kibana
-    logstash-host: 127.0.0.1
-    logstash-port: 30544
+    elasticsearch-uri: ${ELASTICSEARCH_URI:https://resurse-app-elasticsearch:9200}
+    kibana-base-url: ${KIBANA_BASE_URL:http://localhost/kibana}
+    logstash-host: ${LOGSTASH_HOST:127.0.0.1}
+    logstash-port: ${LOGSTASH_PORT:30544}
 
 logging:
   config: classpath:logback-spring.xml
 
 spring:
   Kafka:
-    bootstrap-servers: localhost:30001
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:30001}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -25,5 +32,7 @@ spring:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+    config-url: ../v3/api-docs/swagger-config
+    url: ../v3/api-docs
   api-docs:
     path: /v3/api-docs

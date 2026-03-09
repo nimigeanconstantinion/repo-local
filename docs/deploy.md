@@ -128,6 +128,30 @@ Realm data is loaded from `files/keycloak/realm-export.json` via a ConfigMap tem
 
 Update the JSON file and run `helm upgrade --install` again to apply changes.
 
+## Kong local config
+
+For the local profile based on `values-bgd.yaml`, Kong runs in DB-less mode.
+
+- Declarative config file: `files/kong/bgd-kong.yml`
+- Generated ConfigMap template: `templates/kong-declarative-configmap.yaml`
+- Admin API: `http://localhost/kong-admin`
+- API routes through Kong:
+  - `http://localhost/kong/consumer/api/messages`
+  - `http://localhost/kong/publisher/api/messages`
+- Swagger direct on the applications:
+  - `http://localhost:8081/publisher/swagger-ui/index.html`
+  - `http://localhost:8082/consumer/swagger-ui/index.html`
+
+After changing `files/kong/bgd-kong.yml`, apply the update with:
+
+```bash
+helm upgrade --install "$RELEASE" . \
+  --namespace "$NAMESPACE" \
+  --create-namespace \
+  -f values.yaml \
+  -f values-bgd.yaml
+```
+
 ## Uninstall
 
 ```bash

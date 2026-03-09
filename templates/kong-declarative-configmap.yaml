@@ -1,0 +1,15 @@
+{{- $kongDeclarativeConfig := .Values.kongDeclarativeConfig | default dict -}}
+{{- if and .Values.kong.enabled ($kongDeclarativeConfig.enabled | default false) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $kongDeclarativeConfig.name }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" }}
+data:
+  kong.yml: |
+{{ .Files.Get $kongDeclarativeConfig.file | nindent 4 }}
+{{- end }}

@@ -1,0 +1,38 @@
+_format_version: "3.0"
+_transform: true
+
+# Declarative Kong config for the values-bgd.yaml environment.
+# Local Spring services run on the host machine and expose only API endpoints through Kong.
+# Access them via:
+# - http://localhost/kong/publisher/api/messages
+# - http://localhost/kong/consumer/api/messages
+
+services:
+  - name: testing-app-publisher-local
+    url: http://host.docker.internal:8081
+  - name: testing-app-consumer-local
+    url: http://host.docker.internal:8082
+
+routes:
+  - name: testing-app-publisher-local-route
+    service: testing-app-publisher-local
+    protocols:
+      - http
+      - https
+    paths:
+      - /publisher/api/messages
+    strip_path: false
+  - name: testing-app-consumer-local-route
+    service: testing-app-consumer-local
+    protocols:
+      - http
+      - https
+    paths:
+      - /consumer/api/messages
+    strip_path: false
+
+plugins: []
+consumers: []
+upstreams: []
+certificates: []
+ca_certificates: []

@@ -126,6 +126,11 @@ grafana:
       root_url: "%(protocol)s://%(domain)s/grafana"
       serve_from_sub_path: true
 
+kongDeclarativeConfig:
+  enabled: true
+  name: kong-bgd-declarative-config
+  file: files/kong/bgd-kong.yml
+
 kong:
   enabled: true
   replicaCount: 1
@@ -143,45 +148,33 @@ kong:
       tag: 3.5.1-debian-12-r3
       digest: ""
       pullPolicy: IfNotPresent
-  database: "postgresql"
+  database: "off"
   postgresql:
     enabled: false
-    external:
-      host: postgresql
-      port: 5432
-      user: postgres
-      password: "password123"
-      database: postgres
-      existingSecret: postgresql
-      existingSecretPasswordKey: postgres-password
-  networkPolicy:
-    extraIngress:
-      - ports:
-          - port: 8002
-            protocol: TCP
   kong:
+    declarativeConfigCM: "kong-bgd-declarative-config"
     containerPorts:
       proxyHttp: 5000
       adminHttp: 8001
+    customReadinessProbe:
+      tcpSocket:
+        port: http-proxy
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 2
+      failureThreshold: 6
+      successThreshold: 1
     extraEnvVars:
       - name: KONG_PROXY_LISTEN
         value: "0.0.0.0:5000"
       - name: KONG_ADMIN_LISTEN
         value: "0.0.0.0:8001"
-      - name: KONG_ADMIN_GUI_LISTEN
-        value: "0.0.0.0:8002"
-      - name: KONG_ADMIN_GUI_URL
-        value: "http://localhost/kong-manager"
-      - name: KONG_ADMIN_GUI_API_URL
-        value: "http://localhost/kong-admin"
+      - name: KONG_ROUTER_FLAVOR
+        value: "traditional"
   service:
     type: ClusterIP
-    exposeAdmin: true
-    extraPorts:
-      - name: admin-gui
-        port: 8002
-        targetPort: 8002
-        protocol: TCP
+    exposeAdmin: false
+    extraPorts: []
   ingress:
     enabled: true
     ingressClassName: nginx
@@ -192,62 +185,4 @@ kong:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/rewrite-target: /$2
-    extraRules:
-      - host: localhost
-        http:
-          paths:
-            - path: /kong-admin(/|$)(.*)
-              pathType: ImplementationSpecific
-              backend:
-                service:
-                  name: "{{ include \"common.names.fullname\" $ }}"
-                  port:
-                    name: http-admin
-            - path: /kong-manager(/|$)(.*)
-              pathType: ImplementationSpecific
-              backend:
-                service:
-                  name: "{{ include \"common.names.fullname\" $ }}"
-                  port:
-                    name: admin-gui
-
-konga:
-  enabled: true
-  replicaCount: 1
-  image:
-    repository: pantsel/konga
-    tag: "0.14.9"
-    pullPolicy: IfNotPresent
-  config:
-    node_env: development
-    token_secret: "konga-secret-bgd"
-    db_adapter: mysql
-    db_host: mysql
-    db_port: 3306
-    db_user: konga
-    db_password: "konga123"
-    db_database: konga_database
-  resources:
-    requests:
-      cpu: 200m
-      memory: 512Mi
-    limits:
-      cpu: 1000m
-      memory: 1Gi
-  service:
-    type: ClusterIP
-    port: 80
-  ingress:
-    enabled: true
-    annotations:
-      kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/use-regex: "true"
-      nginx.ingress.kubernetes.io/rewrite-target: /$2
-      nginx.ingress.kubernetes.io/proxy-redirect-from: /
-      nginx.ingress.kubernetes.io/proxy-redirect-to: /konga/
-      nginx.ingress.kubernetes.io/x-forwarded-prefix: /konga
-    hosts:
-      - host: localhost
-        paths:
-          - /konga(/|$)(.*)
-    tls: []
+    extraRules: []
